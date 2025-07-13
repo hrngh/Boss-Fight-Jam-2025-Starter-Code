@@ -47,7 +47,11 @@ public class Player : MonoBehaviour
     public GameObject attackOnePrefab;
     public GameObject attackTwoPrefab;
 
-    [Header("Assymetric Player Art")] // include an alternate Animation Controller here to allow for assymetry
+    /**
+     * Include an alternate Animation Controller here to allow for assymetry
+     * Leave null to just mirror the contents of the sprite
+     */
+    [Header("Assymetric Player Art")] 
     public RuntimeAnimatorController controllerAlt;
     private RuntimeAnimatorController controllerMain;
 
@@ -183,7 +187,7 @@ public class Player : MonoBehaviour
         if ((horizInput > 0.01f && dir == -1) || (horizInput < -0.01f && dir == 1))
         {
             dir = Mathf.Sign(horizInput);
-            sprite.flipX = dir == 1 ? true : false;
+            if(controllerAlt) sprite.flipX = dir == 1 ? true : false;
             transform.localScale = new Vector3(dir * Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
             //transform.rotation = Quaternion.Euler(0, dir == -1 ? -180 : 0, 0);
             if (grounded && enableFlipAnim) anim.Play("flip");
