@@ -171,6 +171,7 @@ public class Player : MonoBehaviour
     {
         // jumping
         doJumping();
+        anim.SetBool("upward", rb.velocity.y >= 0);
 
         // handle L/R
         doHorizontalMovement();
