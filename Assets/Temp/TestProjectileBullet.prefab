@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 8063913231363747682}
   m_Layer: 0
   m_Name: TestProjectileBullet
-  m_TagString: Untagged
+  m_TagString: Attack
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -277,6 +277,8 @@ MonoBehaviour:
   lifespan: 1
   quantity: 3
   damage: 5
+  timeBetweenAttacks: 0.1
+  autofire: 1
   friendly: 1
   piercing: 0
   decoupled: 1

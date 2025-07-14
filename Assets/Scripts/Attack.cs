@@ -37,6 +37,8 @@ public class Attack : MonoBehaviour
     public float lifespan;
     public int quantity;
     public float damage;
+    public float timeBetweenAttacks;
+    public bool autofire; // toggles whether the attack can be held down to fire
 
     // components
     [Header("Other Components")]
@@ -95,24 +97,35 @@ public class Attack : MonoBehaviour
         // evaluate curves
         float progress = time / lifespan;
         // speed
-        if (speedEnabled) transform.Translate(Vector3.right * speed.Evaluate(progress) * Time.deltaTime); 
+        if (speedEnabled) transform.Translate(Vector3.right * speed.Evaluate(progress) * Time.deltaTime);
         // waviness
         if (wavinessEnabled)
         {
             float waveAmpFinal = Time.deltaTime * wavinessAmplitude.Evaluate(progress);
             float waveEval = time * wavinessFrequency.Evaluate(progress) * Mathf.PI * 2;
-            transform.Translate(Vector3.up * Mathf.Cos(waveEval) * waveAmpFinal); 
+            transform.Translate(Vector3.up * Mathf.Cos(waveEval) * waveAmpFinal);
         }
         // curviness
-        if (curvinessEnabled) transform.Rotate(Vector3.forward * curviness.Evaluate(progress) * Time.deltaTime * 360); 
+        if (curvinessEnabled) transform.Rotate(Vector3.forward * curviness.Evaluate(progress) * Time.deltaTime * 360);
         // size
-        if (sizeEnabled) transform.localScale = Vector3.one * size.Evaluate(progress); 
+        if (sizeEnabled) transform.localScale = Vector3.one * size.Evaluate(progress);
 
         // do gravity
         if (gravityEnabled)
         {
             verticalVelocity -= gravity.Evaluate(progress) * Time.deltaTime;
             transform.Translate(0, verticalVelocity * Time.deltaTime, 0, Space.World); // gravity
+        }
+    }
+
+    public void tryDestroy()
+    {
+        // trigger a destruction for non-piercing projectiles
+        switch (ai)
+        {
+            default:
+                if (!piercing) destroyProjectile();
+                break;
         }
     }
 

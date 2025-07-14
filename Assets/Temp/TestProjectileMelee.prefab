@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 284423504415218823}
   m_Layer: 0
   m_Name: TestProjectileMelee
-  m_TagString: Untagged
+  m_TagString: Attack
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -241,6 +241,8 @@ MonoBehaviour:
   lifespan: 0.3
   quantity: 1
   damage: 30
+  timeBetweenAttacks: 0.4
+  autofire: 1
   friendly: 1
   piercing: 0
   decoupled: 0

@@ -10,6 +10,7 @@ public class Player : MonoBehaviour
     public float topHorizontalSpeed;
     public bool enableFlipAnim;
     public float jumpSpeed;
+    public float gravityScale;
     public float jumpMaxExtensionTime; // how long the jump button can be held to extend a jump
     public float dashSpeed;
     public float dashTime;
@@ -17,19 +18,12 @@ public class Player : MonoBehaviour
     public float dashGravityModifier; // the strength of gravity when dashing
     public bool dashInvulnerable; // whether the dash is invulnerable
 
-    [Header("Stat Modifications")]
-    public float maxHealth;
-    public float attackOneTBA; // time between attacks
-    public float attackTwoTBA; // time between attacks
-
     [Header("Toggle Modifications")]
     public bool attackWithMouse; // toggles whether attacks are handled by mouse clicks
     public bool enableDash;
     public bool enableDoubleJump;
     public bool enableSpawnAnim; // toggles whether the player starts out with a spawn animation
     public bool enableDieAnim; // toggles whether the player has an animation when dying
-    public bool enableAttackOneAutofire; // toggles whether an input can be held down to perform attack one
-    public bool enableAttackTwoAutofire; // toggles whether an input can be held down to perform attack two
     public bool enableAltAttackAnimOne;
     public bool enableAltAttackAnimTwo;
     public bool enableAirAttackAnimOne;
@@ -46,6 +40,8 @@ public class Player : MonoBehaviour
     [Header("Attack Prefabs")] // NOTE: make sure these prefabs contain the "Attack.cs" script, and have the player as the transform parent (projectiles are detached in script)
     public GameObject attackOnePrefab;
     public GameObject attackTwoPrefab;
+    private Attack attackOneScript;
+    private Attack attackTwoScript;
 
     /**
      * Include an alternate Animation Controller here to allow for assymetry
@@ -55,6 +51,11 @@ public class Player : MonoBehaviour
     public RuntimeAnimatorController controllerAlt;
     private RuntimeAnimatorController controllerMain;
 
+    /***********
+     * GENERAL *
+     **********/
+    [Header("Misc")]
+    public bool canInput; // toggles the player's ability to input (good for cutscenes and such)
     /*
      * This is a built-in place to add whatever mechanic you would like to the fight.
      * It can be whatever you want, or nothing at all. This is entirely up to you, the jammer.
@@ -65,12 +66,6 @@ public class Player : MonoBehaviour
         // Put code here!
     }
 
-    /***********
-     * GENERAL *
-     **********/
-    [Header("Misc")]
-    public bool canInput; // toggles the player's ability to input (good for cutscenes and such)
-
     // player states
     private float bufferedJumpTimer;
     private BufferedAttack bufferedAttack;
@@ -80,9 +75,10 @@ public class Player : MonoBehaviour
     private float attackTimer;
     private float dashTimer;
     private bool grounded;
-    private bool platformsDisabled;
     private int groundLayers;
     private int platformLayer;
+    private System.Collections.Generic.HashSet<Collider2D> disabledPlatforms;
+    private ContactFilter2D platformFilter;
     private bool canDoubleJump;
     public enum BufferedAttack
     {
@@ -97,8 +93,7 @@ public class Player : MonoBehaviour
     public Animator anim;
     public SpriteRenderer sprite;
     public Rigidbody2D rb;
-    public Collider2D hitbox;
-    public Collider2D physicsCollider;
+    public Collider2D mainCollider;
     public Collider2D groundCheckCollider;
 
     // handle other
@@ -110,6 +105,17 @@ public class Player : MonoBehaviour
         dir = 1; 
         groundLayers = LayerMask.GetMask(new string[] { "Ground", "Platform" });
         platformLayer = LayerMask.NameToLayer("Platform");
+        platformFilter = new ContactFilter2D();
+        platformFilter.SetLayerMask(platformLayer);
+        rb.gravityScale = gravityScale;
+        disabledPlatforms = new System.Collections.Generic.HashSet<Collider2D>();
+        // grab attack scripts from prefabs
+        // make sure to update the attack scripts if the prefabs ever change during runtime!
+        attackOnePrefab.TryGetComponent<Attack>(out attackOneScript);
+        if (!attackOneScript) Debug.Log("Check your attackOnePrefab for the Attack script");
+        attackTwoPrefab.TryGetComponent<Attack>(out attackTwoScript);
+        if (!attackTwoScript) Debug.Log("Check your attackTwoPrefab for the Attack script");
+        // grab default animator controller if needed
         if (controllerAlt) controllerMain = anim.runtimeAnimatorController;
     }
 
@@ -156,7 +162,6 @@ public class Player : MonoBehaviour
             dashTimer -= Time.deltaTime;
             if (dashTimer <= 0)
             {
-                if (dashInvulnerable) hitbox.enabled = true;
                 anim.SetBool("dashing", false);
             }
         }
@@ -177,8 +182,8 @@ public class Player : MonoBehaviour
         doHorizontalMovement();
 
         // platform dropping/reinstating
-        if (Input.GetKeyDown(jumpKey) && Input.GetKey(downKey)) disablePlatforms(true);
-        if (platformsDisabled && !physicsCollider.IsTouchingLayers(platformLayer)) disablePlatforms(false);
+        reinstatePlatforms();
+        if (Input.GetKeyDown(jumpKey) && Input.GetKey(downKey)) disablePlatforms();
     }
 
     void doHorizontalMovement()
@@ -188,13 +193,12 @@ public class Player : MonoBehaviour
         if ((horizInput > 0.01f && dir == -1) || (horizInput < -0.01f && dir == 1))
         {
             dir = Mathf.Sign(horizInput);
-            if(controllerAlt) sprite.flipX = dir == 1 ? true : false;
+            if (controllerAlt) anim.runtimeAnimatorController = dir == 1 ? controllerMain : controllerAlt;
             transform.localScale = new Vector3(dir * Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
-            //transform.rotation = Quaternion.Euler(0, dir == -1 ? -180 : 0, 0);
             if (grounded && enableFlipAnim) anim.Play("flip");
         }
         // do movement
-        rb.velocity = new Vector2(horizInput, rb.velocity.y); //TODO maybe change
+        rb.velocity = new Vector2(horizInput, rb.velocity.y);
         anim.SetBool("moving", Mathf.Abs(horizInput) > 0.01f);
     }
 
@@ -205,9 +209,14 @@ public class Player : MonoBehaviour
         {
             if (grounded || canDoubleJump)
             {
-                if (!grounded) canDoubleJump = false;
+                if (!grounded)
+                {
+                    canDoubleJump = false;
+                } else
+                {
+                    anim.Play("jump");
+                }
                 jumpHoldTimer = jumpMaxExtensionTime;
-                anim.Play("jump");
             }
             else
             {
@@ -235,7 +244,6 @@ public class Player : MonoBehaviour
             dashTimer = dashTime;
             anim.Play("dash");
             anim.SetBool("dashing", true);
-            if (dashInvulnerable) hitbox.enabled = false;
             rb.velocity = new Vector2(dashSpeed * dir, 0);
         }
         if (dashTimer > 0)
@@ -254,16 +262,9 @@ public class Player : MonoBehaviour
             // reset grounded var
             grounded = true;
             // do jump if buffered
-            if(bufferedJumpTimer > 0)
+            if(bufferedJumpTimer > 0 && !Input.GetKey(downKey))
             {
-                if (Input.GetKey(downKey))
-                {
-                    disablePlatforms(true);
-                }
-                else
-                {
-                    jumpHoldTimer = jumpMaxExtensionTime;
-                }
+                jumpHoldTimer = jumpMaxExtensionTime;
             }
             // handle double jump
             if (enableDoubleJump) canDoubleJump = true;
@@ -277,10 +278,59 @@ public class Player : MonoBehaviour
         }
     }
 
-    void disablePlatforms(bool ignore)
+    private void reinstatePlatforms()
     {
-        platformsDisabled = ignore;
-        Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Default"), LayerMask.NameToLayer("Platform"), ignore);
+        if (disabledPlatforms.Count != 0)
+        {
+            System.Collections.Generic.HashSet<Collider2D> remainingPlatforms;
+            remainingPlatforms = new System.Collections.Generic.HashSet<Collider2D>();
+            Collider2D[] hits = new Collider2D[disabledPlatforms.Count];
+            groundCheckCollider.OverlapCollider(platformFilter, hits);
+            foreach (Collider2D hit in hits)
+            {
+                if (!hit) continue;
+                //Debug.Log(Time.time + " hit");
+                remainingPlatforms.Add(hit);
+            }
+            foreach (Collider2D c in disabledPlatforms)
+            {
+                if (remainingPlatforms.Contains(c)) continue;
+                //Physics2D.IgnoreCollision(mainCollider, c, false);
+            }
+            /*
+            foreach (Collider2D c in disabledPlatforms)
+            {
+                Debug.Log(groundCheckCollider.IsTouching(c));
+                if (!groundCheckCollider.IsTouching(c))
+                {
+                    Physics2D.IgnoreCollision(mainCollider, c, false);
+                }
+                else
+                {
+                    remainingPlatforms.Add(c);
+                }
+            }
+            */
+            disabledPlatforms = remainingPlatforms;
+        }
+    }
+
+    void disablePlatforms()
+    {
+        //disable colliders
+        Collider2D[] hits = new Collider2D[5];
+        groundCheckCollider.OverlapCollider(platformFilter, hits);
+        foreach (Collider2D hit in hits)
+        {
+            if (!hit) continue;
+            Physics2D.IgnoreCollision(mainCollider, hit);
+            disabledPlatforms.Add(hit);
+        }
+    }
+
+    public bool isInvulnerable()
+    {
+        return dashInvulnerable && dashTimer > 0;
     }
 
     // handle attacking
@@ -291,12 +341,12 @@ public class Player : MonoBehaviour
         bool input2;
         if (attackWithMouse)
         {
-            input1 = (enableAttackOneAutofire && Input.GetMouseButton(0)) || (!enableAttackOneAutofire && Input.GetMouseButtonDown(0));
-            input2 = (enableAttackTwoAutofire && Input.GetMouseButton(1)) || (!enableAttackTwoAutofire && Input.GetMouseButtonDown(1));
+            input1 = (attackOneScript.autofire && Input.GetMouseButton(0)) || (!attackOneScript.autofire && Input.GetMouseButtonDown(0));
+            input2 = (attackTwoScript.autofire && Input.GetMouseButton(1)) || (!attackTwoScript.autofire && Input.GetMouseButtonDown(1));
         } else
         {
-            input1 = (enableAttackOneAutofire && Input.GetKey(attackOneKey)) || (!enableAttackOneAutofire && Input.GetKeyDown(attackOneKey));
-            input2 = (enableAttackTwoAutofire && Input.GetKey(attackTwoKey)) || (!enableAttackTwoAutofire && Input.GetKeyDown(attackTwoKey));
+            input1 = (attackOneScript.autofire && Input.GetKey(attackOneKey)) || (!attackOneScript.autofire && Input.GetKeyDown(attackOneKey));
+            input2 = (attackTwoScript.autofire && Input.GetKey(attackTwoKey)) || (!attackTwoScript.autofire && Input.GetKeyDown(attackTwoKey));
         }
         // handle attack 1
         if (input1)
@@ -330,7 +380,7 @@ public class Player : MonoBehaviour
     {
         dashTimer = Mathf.Min(dashTimer, 0);
         // set attack delay 
-        attackTimer = attackTwoTBA;
+        attackTimer = attackTwoScript.timeBetweenAttacks;
         // spawn object
         SpawnAttack(attackTwoPrefab, false);
         // animate
@@ -357,7 +407,7 @@ public class Player : MonoBehaviour
     {
         dashTimer = Mathf.Min(dashTimer, 0);
         // set attack delay 
-        attackTimer = attackOneTBA;
+        attackTimer = attackOneScript.timeBetweenAttacks;
         // spawn object
         SpawnAttack(attackOnePrefab, true);
         // animate
@@ -381,9 +431,7 @@ public class Player : MonoBehaviour
 
     private void SpawnAttack(GameObject prefab, bool isAttackOne)
     {
-        Attack attackScript;
-        prefab.TryGetComponent<Attack>(out attackScript);
-        if (!attackScript) Debug.Log("Check your attack" + (isAttackOne ? "One" : "Two") + "Prefab for the Attack script");
+        Attack attackScript = isAttackOne ? attackOneScript : attackTwoScript;
         int quantity = attackScript.quantity;
         for(int i=0; i<quantity; i++)
         {
@@ -421,11 +469,10 @@ public class Player : MonoBehaviour
 
 /**
  * TODO
- *      Assymetric toggle
- *      maybe get some height on attack (as a toggle)
- *      maybe acceleration for horiz movement (as a toggle)
+ *      platforms (make not default layer lol)
+ *      attacks collide w/ walls/platforms
  *      health script (player hitbox)
- *          immunity frames/dash collider interaction
+ *      dying check
  *      enemy health script (boss hitbox)
  *      
  *      Testing
