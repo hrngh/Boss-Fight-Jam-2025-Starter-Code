@@ -13,6 +13,7 @@ public class PlayerHealth : MonoBehaviour
     private Player playerScript;
     private float health;
     private float immunityTimer;
+    [HideInInspector] public bool dead;
 
     void Start()
     {
@@ -28,9 +29,10 @@ public class PlayerHealth : MonoBehaviour
         if(immunityTimer >= 0) immunityTimer -= Time.deltaTime;
         health = maxHealth;
     }
+
     void OnTriggerEnter2D(Collider2D collision)
     {
-        // get the attack's script and ignore invalid attacks
+        // get the attack's script and ignore non-attacks
         Attack attackScript;
         collision.TryGetComponent<Attack>(out attackScript);
         if (!attackScript || attackScript.friendly || playerScript.isInvulnerable()) return;
@@ -39,12 +41,26 @@ public class PlayerHealth : MonoBehaviour
         if(immunityTimer <= 0)
         {
             health -= attackScript.damage;
-            if (health < 0) health = 0;
+            if (health < 0)
+            {
+                die();
+            }
             immunityTimer += immunityFrameLength;
         }
 
         // destroy projectile (if possible)
-        attackScript.tryDestroy();
+        attackScript.tryDestroy(Attack.HITBOX_HIT);
 
+    }
+
+    // Handle game over conditions
+    void die()
+    {
+        // clamp health and let player know to die
+        health = 0;
+        dead = true;
+        playerScript.canInput = false;
+
+        // you probably want to put more code here
     }
 }

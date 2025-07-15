@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class Player : MonoBehaviour
 {
@@ -77,7 +78,7 @@ public class Player : MonoBehaviour
     private bool grounded;
     private int groundLayers;
     private int platformLayer;
-    private System.Collections.Generic.HashSet<Collider2D> disabledPlatforms;
+    private HashSet<Collider2D> disabledPlatforms;
     private ContactFilter2D platformFilter;
     private bool canDoubleJump;
     public enum BufferedAttack
@@ -104,11 +105,10 @@ public class Player : MonoBehaviour
         // set initial values
         dir = 1; 
         groundLayers = LayerMask.GetMask(new string[] { "Ground", "Platform" });
-        platformLayer = LayerMask.NameToLayer("Platform");
         platformFilter = new ContactFilter2D();
-        platformFilter.SetLayerMask(platformLayer);
+        platformLayer = LayerMask.NameToLayer("Platform");
         rb.gravityScale = gravityScale;
-        disabledPlatforms = new System.Collections.Generic.HashSet<Collider2D>();
+        disabledPlatforms = new HashSet<Collider2D>();
         // grab attack scripts from prefabs
         // make sure to update the attack scripts if the prefabs ever change during runtime!
         attackOnePrefab.TryGetComponent<Attack>(out attackOneScript);
@@ -282,22 +282,9 @@ public class Player : MonoBehaviour
     {
         if (disabledPlatforms.Count != 0)
         {
-            System.Collections.Generic.HashSet<Collider2D> remainingPlatforms;
-            remainingPlatforms = new System.Collections.Generic.HashSet<Collider2D>();
+            HashSet<Collider2D> remainingPlatforms;
+            remainingPlatforms = new HashSet<Collider2D>();
             Collider2D[] hits = new Collider2D[disabledPlatforms.Count];
-            groundCheckCollider.OverlapCollider(platformFilter, hits);
-            foreach (Collider2D hit in hits)
-            {
-                if (!hit) continue;
-                //Debug.Log(Time.time + " hit");
-                remainingPlatforms.Add(hit);
-            }
-            foreach (Collider2D c in disabledPlatforms)
-            {
-                if (remainingPlatforms.Contains(c)) continue;
-                //Physics2D.IgnoreCollision(mainCollider, c, false);
-            }
-            /*
             foreach (Collider2D c in disabledPlatforms)
             {
                 Debug.Log(groundCheckCollider.IsTouching(c));
@@ -310,7 +297,6 @@ public class Player : MonoBehaviour
                     remainingPlatforms.Add(c);
                 }
             }
-            */
             disabledPlatforms = remainingPlatforms;
         }
     }
@@ -318,11 +304,11 @@ public class Player : MonoBehaviour
     void disablePlatforms()
     {
         //disable colliders
-        Collider2D[] hits = new Collider2D[5];
+        List<Collider2D> hits = new List<Collider2D>();
         groundCheckCollider.OverlapCollider(platformFilter, hits);
         foreach (Collider2D hit in hits)
         {
-            if (!hit) continue;
+            if (hit.gameObject.layer != platformLayer) continue;
             Physics2D.IgnoreCollision(mainCollider, hit);
             disabledPlatforms.Add(hit);
         }
@@ -442,7 +428,7 @@ public class Player : MonoBehaviour
             if (attackScript.decoupled)
             {
                 attack.transform.parent = null;
-                attack.transform.Rotate(new Vector3(0, 0, dir == -1 ? 180 : 0));
+                attack.transform.Rotate(new Vector3(0, 0, dir == -1 ? 180 : 0)); //TODO fix this
             }
 
             // handle spread
@@ -469,9 +455,7 @@ public class Player : MonoBehaviour
 
 /**
  * TODO
- *      platforms (make not default layer lol)
- *      attacks collide w/ walls/platforms
- *      health script (player hitbox)
+ *      fix bouncy projectile
  *      dying check
  *      enemy health script (boss hitbox)
  *      

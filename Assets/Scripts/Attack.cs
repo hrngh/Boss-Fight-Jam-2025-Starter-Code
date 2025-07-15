@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,11 +6,13 @@ public class Attack : MonoBehaviour
     /* Determines what behavior a projectile follows (customizable)
      * 0 - default
      * 1 - bounce example
-     * 2 - splitshot example
+     * 2 - crackshot example
      */
     [Header("Projectile Mode")]
     public int ai = 0;
-    public GameObject[] childrenPrefabs; // contains objects for this attack to spawn (good for splitting, explosions, etc.)
+    public GameObject[] otherObjects;
+    // contains objects for this attack to spawn (good for splitting, explosions, etc.)
+    // also good for storing child objects
 
     /*
      * Modifiers
@@ -31,7 +32,7 @@ public class Attack : MonoBehaviour
     public AnimationCurve size; // time based
     public bool sizeEnabled;
     public AnimationCurve gravity; // time based
-    public bool gravityEnabled;
+    public bool gravityEnabled; 
     public AnimationCurve spread; // range based
     public bool spreadEnabled;
     public float lifespan;
@@ -57,10 +58,19 @@ public class Attack : MonoBehaviour
     private float time;
     private float verticalVelocity;
     private bool destroyed;
+    private LayerMask groundMask;
+    [HideInInspector] public static int HITBOX_HIT = 0;
+    [HideInInspector] public static int GROUND_HIT = 1;
 
     void Start()
     {
-
+        groundMask = LayerMask.NameToLayer("Ground");
+        // add a custom startup for different ais
+        switch (ai)
+        {
+            default:
+                break;
+        }
     }
 
     void Update()
@@ -114,15 +124,47 @@ public class Attack : MonoBehaviour
         if (gravityEnabled)
         {
             verticalVelocity -= gravity.Evaluate(progress) * Time.deltaTime;
-            transform.Translate(0, verticalVelocity * Time.deltaTime, 0, Space.World); // gravity
+            transform.Translate(0, verticalVelocity * Time.deltaTime, 0, Space.World);
         }
     }
 
-    public void tryDestroy()
+    public void tryDestroy(int source, Collider2D hit = null)
     {
-        // trigger a destruction for non-piercing projectiles
+        // trigger a destruction for non-piercing projectiles (triggered by hits w/ player or walls)
         switch (ai)
         {
+            case 1:
+                // bounce on floor
+                if(source == GROUND_HIT)
+                {
+                    // check if the collission was vertical
+                    Collider2D checkCollider = otherObjects[0].GetComponent<Collider2D>();
+                    List<Collider2D> hits = new List<Collider2D>();
+                    ContactFilter2D dummy = new ContactFilter2D();
+                    checkCollider.enabled = true;
+                    bool isBounce = false;
+                    Physics2D.OverlapBox(checkCollider.bounds.center, checkCollider.bounds.size, 0, dummy, hits);
+                    foreach (Collider2D c in hits)
+                    {
+                        if (c == hit) isBounce = true;
+                    }
+                    Debug.DrawLine(checkCollider.bounds.center + checkCollider.bounds.size / 2, checkCollider.bounds.center - checkCollider.bounds.size / 2, Color.red, 3);
+                    checkCollider.enabled = false;
+
+                    // do logic
+                    if (isBounce)
+                    {
+                        // bounce
+                        verticalVelocity = Mathf.Abs(verticalVelocity) * .95f;
+                        // move a bit to prevent multi-hits
+                        transform.Translate(0, verticalVelocity * Time.deltaTime, 0, Space.World); 
+                    } else
+                    {
+                        // hit wall and die
+                        destroyProjectile();
+                    }
+                }
+                break;
             default:
                 if (!piercing) destroyProjectile();
                 break;
@@ -150,5 +192,12 @@ public class Attack : MonoBehaviour
         }
         if (particles) particles.Play();
         time = 0;
+    }
+
+    void OnTriggerEnter2D(Collider2D collision)
+    {
+        // destroy projectiles on contact with any ground
+        if (collision.gameObject.layer != groundMask) return;
+        tryDestroy(GROUND_HIT, collision);
     }
 }
