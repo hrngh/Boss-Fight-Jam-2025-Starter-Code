@@ -1,63 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &3022803142797954870
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 365759730357936192}
-  - component: {fileID: 4708735214898741016}
-  m_Layer: 0
-  m_Name: vertCheck
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &365759730357936192
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3022803142797954870}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 8063913231363747681}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!61 &4708735214898741016
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3022803142797954870}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: -0.2125}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 0.3, y: 0.425}
-  m_EdgeRadius: 0
 --- !u!1 &8063913231363747680
 GameObject:
   m_ObjectHideFlags: 0
@@ -70,9 +12,9 @@ GameObject:
   - component: {fileID: 8063913231363747684}
   - component: {fileID: 8063913231363747683}
   - component: {fileID: 8063913231363747682}
-  - component: {fileID: -7487976661372789841}
+  - component: {fileID: 6514826837371809184}
   m_Layer: 0
-  m_Name: ExampleLobber
+  m_Name: ExampleCrackshot
   m_TagString: Attack
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -86,11 +28,10 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8063913231363747680}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2, y: 0, z: 0}
-  m_LocalScale: {x: 2, y: 2, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 365759730357936192}
+  m_LocalPosition: {x: 3, y: 0, z: 0}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 3}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -135,12 +76,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
-  m_Sprite: {fileID: -249718146, guid: d5985ab295e76d547a8bdba19447cce8, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+  m_Color: {r: 1, g: 0.6862745, b: 0.46274513, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.53125, y: 0.90625}
+  m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -158,26 +99,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed20a17c130adea41b1be42327157de3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ai: 1
+  ai: 2
   childObjects:
-  - {fileID: 3022803142797954870}
+  - {fileID: 8063913231363747680, guid: beef5b3bc637d884f85c4b240959d632, type: 3}
   speed:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
       value: 20
-      inSlope: -5
-      outSlope: -5
+      inSlope: -20
+      outSlope: -20
       tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 1
-      value: 15
-      inSlope: -5
-      outSlope: -5
+      value: 0
+      inSlope: -20
+      outSlope: -20
       tangentMode: 34
       weightedMode: 0
       inWeight: 0.33333334
@@ -185,17 +126,53 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  movementType: 0
+  movementType: 1
   speedEnabled: 1
   wavinessAmplitude:
     serializedVersion: 2
-    m_Curve: []
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 10
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 10
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
   wavinessFrequency:
     serializedVersion: 2
-    m_Curve: []
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 3
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 3
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
@@ -205,18 +182,18 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
+      value: -10
+      inSlope: 20
+      outSlope: 20
       tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 1
-      value: 0
-      inSlope: 0
-      outSlope: 0
+      value: 10
+      inSlope: 20
+      outSlope: 20
       tangentMode: 34
       weightedMode: 0
       inWeight: 0.33333334
@@ -230,18 +207,18 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 3
-      inSlope: -1
-      outSlope: -1
+      value: 0.4
+      inSlope: 0
+      outSlope: 0
       tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 1
-      value: 2
-      inSlope: -1
-      outSlope: -1
+      value: 0.4
+      inSlope: 0
+      outSlope: 0
       tangentMode: 34
       weightedMode: 0
       inWeight: 0.33333334
@@ -249,13 +226,13 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  sizeEnabled: 1
+  sizeEnabled: 0
   gravity:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 25
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 34
@@ -264,7 +241,7 @@ MonoBehaviour:
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 1
-      value: 25
+      value: 0
       inSlope: 0
       outSlope: 0
       tangentMode: 34
@@ -274,25 +251,25 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  initialVerticalVelocity: 10
-  gravityEnabled: 1
+  initialVerticalVelocity: 0
+  gravityEnabled: 0
   spread:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 20
-      inSlope: 20
-      outSlope: 20
+      value: -25
+      inSlope: 50
+      outSlope: 50
       tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 1
-      value: 40
-      inSlope: 20
-      outSlope: 20
+      value: 25
+      inSlope: 50
+      outSlope: 50
       tangentMode: 34
       weightedMode: 0
       inWeight: 0.33333334
@@ -300,24 +277,24 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  spreadEnabled: 0
-  lifespan: 2
-  quantity: 1
-  damage: 50
+  spreadEnabled: 1
+  lifespan: 0.4
+  quantity: 3
+  damage: 30
   timeBetweenAttacks: 0.5
   autofire: 1
   spawnDelay: 0.16666667
   friendly: 1
   piercing: 0
   decoupled: 1
-  spreadRandomness: 0.4
+  spreadRandomness: 0
   hitbox: {fileID: 8063913231363747682}
   sprite: {fileID: 8063913231363747684}
   anim: {fileID: 0}
   hasDeathAnim: 0
   particles: {fileID: 0}
   deathWaitTime: 0
-  dir: -1
+  dir: 1
 --- !u!61 &8063913231363747682
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -335,16 +312,16 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 0.90625, y: 0.90625}
-    newSize: {x: 0.53125, y: 0.90625}
+    oldSize: {x: 1, y: 1}
+    newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.8, y: 0.8}
+  m_Size: {x: 0.53125, y: 0.90625}
   m_EdgeRadius: 0
---- !u!50 &-7487976661372789841
+--- !u!50 &6514826837371809184
 Rigidbody2D:
   serializedVersion: 4
   m_ObjectHideFlags: 0
@@ -364,4 +341,4 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 4
+  m_Constraints: 0

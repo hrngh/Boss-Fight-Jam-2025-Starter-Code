@@ -91,7 +91,20 @@ public class Attack : MonoBehaviour
         // end projectile by time
         if (!destroyed && time > lifespan)
         {
-            destroyProjectile();
+            switch (ai)
+            {
+                case 2:
+                    if (childObjects.Length > 0) {
+                        // spawn child in direction of nearest enemy
+                        float angle = CrackshotManager.Instance.getAngle(transform.position);
+                        Instantiate(childObjects[0], transform.position, Quaternion.Euler(0,0,angle));
+                        destroyProjectile();
+                    }
+                    break;
+                default:
+                    destroyProjectile();
+                    break;
+            }
         }
 
         // handle dead projectile

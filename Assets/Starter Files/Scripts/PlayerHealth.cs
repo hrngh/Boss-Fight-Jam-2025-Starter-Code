@@ -9,6 +9,10 @@ public class PlayerHealth : MonoBehaviour
     public float maxHealth;
     private float immunityFrameLength;
 
+    [Header("Hit Flash Effect")]
+    public SpriteRenderer[] flashSprites; // Put sprites here that should flash white on hit
+    public GameObject flashPrefab;
+
     // other vars
     private Player playerScript;
     private float health;
@@ -44,6 +48,9 @@ public class PlayerHealth : MonoBehaviour
             if (health < 0)
             {
                 die();
+            } else
+            {
+                doSpriteFlash();
             }
             immunityTimer += immunityFrameLength;
         }
@@ -51,6 +58,15 @@ public class PlayerHealth : MonoBehaviour
         // destroy projectile (if possible)
         attackScript.tryDestroy(Attack.HitType.hitbox);
 
+    }
+
+    void doSpriteFlash()
+    {
+        foreach (SpriteRenderer sprite in flashSprites)
+        {
+            GameObject flash = Instantiate(flashPrefab, sprite.transform.parent);
+            flash.GetComponent<SpriteRenderer>().sprite = sprite.sprite;
+        }
     }
 
     // Handle game over conditions
