@@ -257,7 +257,21 @@ public class Player : MonoBehaviour
     {
         // check if grounded
         bool wasGrounded = grounded;
-        if (groundCheckCollider.IsTouchingLayers(groundLayers))
+        // make sure the "ground" is not a disabled platform
+        bool nowGrounded = false;
+        List<Collider2D> hits = new List<Collider2D>();
+        groundCheckCollider.OverlapCollider(platformFilter, hits);
+        foreach (Collider2D hit in hits)
+        {
+            if (((groundLayers>>hit.gameObject.layer)&1) == 0) continue;
+            if (!disabledPlatforms.Contains(hit))
+            {
+                nowGrounded = true;
+                break;
+            }
+        }
+        // do logic based on groundedness
+        if (nowGrounded)
         {
             // reset grounded var
             grounded = true;
@@ -287,7 +301,6 @@ public class Player : MonoBehaviour
             Collider2D[] hits = new Collider2D[disabledPlatforms.Count];
             foreach (Collider2D c in disabledPlatforms)
             {
-                Debug.Log(groundCheckCollider.IsTouching(c));
                 if (!groundCheckCollider.IsTouching(c))
                 {
                     Physics2D.IgnoreCollision(mainCollider, c, false);
@@ -428,7 +441,7 @@ public class Player : MonoBehaviour
             if (attackScript.decoupled)
             {
                 attack.transform.parent = null;
-                attack.transform.Rotate(new Vector3(0, 0, dir == -1 ? 180 : 0)); //TODO fix this
+                attack.GetComponent<Attack>().dir = dir;
             }
 
             // handle spread

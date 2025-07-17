@@ -100,7 +100,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ai: 0
-  childrenPrefabs: []
+  childObjects: []
   speed:
     serializedVersion: 2
     m_Curve:
@@ -134,6 +134,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  movementType: 1
   speedEnabled: 0
   wavinessAmplitude:
     serializedVersion: 2
@@ -258,6 +259,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  initialVerticalVelocity: 0
   gravityEnabled: 0
   spread:
     serializedVersion: 2
@@ -299,6 +301,7 @@ MonoBehaviour:
   hasDeathAnim: 0
   particles: {fileID: 0}
   deathWaitTime: 0
+  dir: 1
 --- !u!61 &284423504415218823
 BoxCollider2D:
   m_ObjectHideFlags: 0

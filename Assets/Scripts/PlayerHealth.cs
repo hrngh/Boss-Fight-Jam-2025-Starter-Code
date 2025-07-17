@@ -49,7 +49,7 @@ public class PlayerHealth : MonoBehaviour
         }
 
         // destroy projectile (if possible)
-        attackScript.tryDestroy(Attack.HITBOX_HIT);
+        attackScript.tryDestroy(Attack.HitType.hitbox);
 
     }
 
