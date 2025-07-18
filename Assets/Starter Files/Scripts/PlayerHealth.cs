@@ -13,6 +13,12 @@ public class PlayerHealth : MonoBehaviour
     public SpriteRenderer[] flashSprites; // Put sprites here that should flash white on hit
     public GameObject flashPrefab;
 
+    [Header("Sounds")] // leave null for no sound
+    public AudioClip hurtSound;
+    public float hurtSoundVol = 1;
+    public AudioClip dieSound;
+    public float dieSoundVol = 1;
+
     // other vars
     private Player playerScript;
     private float health;
@@ -24,6 +30,7 @@ public class PlayerHealth : MonoBehaviour
         // grab player script
         TryGetComponent<Player>(out playerScript);
         if (!playerScript) Debug.Log("Check that all PlayerHealths' gameobjects have an associated player");
+        health = maxHealth;
 
     }
 
@@ -31,7 +38,6 @@ public class PlayerHealth : MonoBehaviour
     {
         // update immunity frames
         if(immunityTimer >= 0) immunityTimer -= Time.deltaTime;
-        health = maxHealth;
     }
 
     void OnTriggerEnter2D(Collider2D collision)
@@ -39,17 +45,18 @@ public class PlayerHealth : MonoBehaviour
         // get the attack's script and ignore non-attacks
         Attack attackScript;
         collision.TryGetComponent<Attack>(out attackScript);
-        if (!attackScript || attackScript.friendly || playerScript.isInvulnerable()) return;
+        if (!attackScript || attackScript.friendly || playerScript.isInvulnerable() || dead) return;
 
         // try damage/immunity
         if(immunityTimer <= 0)
         {
             health -= attackScript.damage;
-            if (health < 0)
+            if (health <= 0)
             {
                 die();
             } else
             {
+                AudioManager.Instance.PlaySFX(hurtSound, hurtSoundVol);
                 doSpriteFlash();
             }
             immunityTimer += immunityFrameLength;
@@ -64,8 +71,8 @@ public class PlayerHealth : MonoBehaviour
     {
         foreach (SpriteRenderer sprite in flashSprites)
         {
-            GameObject flash = Instantiate(flashPrefab, sprite.transform.parent);
-            flash.GetComponent<SpriteRenderer>().sprite = sprite.sprite;
+            GameObject flash = Instantiate(flashPrefab, sprite.transform);
+            flash.GetComponent<FlashSprite>().matchSprite = sprite;
         }
     }
 
@@ -77,6 +84,7 @@ public class PlayerHealth : MonoBehaviour
         dead = true;
         playerScript.canInput = false;
         // play death anim if enabled
+        AudioManager.Instance.PlaySFX(dieSound, dieSoundVol);
         if (playerScript.enableDieAnim) playerScript.anim.Play("die");
 
         // you probably want to put more code here

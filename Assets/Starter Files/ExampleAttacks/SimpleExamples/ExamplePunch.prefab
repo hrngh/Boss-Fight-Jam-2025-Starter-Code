@@ -246,6 +246,12 @@ MonoBehaviour:
   damage: 30
   timeBetweenAttacks: 0.4
   autofire: 1
+  spawnSound: {fileID: 8300000, guid: 57bbd0ee9dd503b489c6f25e589902f5, type: 3}
+  spawnSoundVol: 1
+  hitSound: {fileID: 0}
+  hitSoundVol: 1
+  expireSound: {fileID: 0}
+  expireSoundVol: 1
   spawnDelay: 0.16666667
   friendly: 1
   piercing: 1

@@ -20,6 +20,7 @@ public class EnemyHealth : MonoBehaviour
 
     void Start()
     {
+        health = maxHealth;
         // put any code here that you need (such as UI stuff)
     }
 
@@ -27,7 +28,6 @@ public class EnemyHealth : MonoBehaviour
     {
         // update immunity frames
         if (immunityTimer >= 0) immunityTimer -= Time.deltaTime;
-        health = maxHealth;
     }
 
     void OnTriggerEnter2D(Collider2D collision)
@@ -61,8 +61,8 @@ public class EnemyHealth : MonoBehaviour
     {
         foreach (SpriteRenderer sprite in flashSprites)
         {
-            GameObject flash = Instantiate(flashPrefab, sprite.transform.parent);
-            flash.GetComponent<SpriteRenderer>().sprite = sprite.sprite;
+            GameObject flash = Instantiate(flashPrefab, sprite.transform);
+            flash.GetComponent<FlashSprite>().matchSprite = sprite;
         }
     }
 

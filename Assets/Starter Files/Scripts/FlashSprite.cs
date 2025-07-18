@@ -8,6 +8,7 @@ public class FlashSprite : MonoBehaviour
     // Destroys itself when it turns transparent
     public AnimationCurve alpha;
     public SpriteRenderer sprite;
+    public SpriteRenderer matchSprite;
     private float time;
     void Start()
     {
@@ -17,7 +18,17 @@ public class FlashSprite : MonoBehaviour
     void Update()
     {
         time += Time.deltaTime;
+        // do color
         sprite.color = new Color(1, 1, 1, alpha.Evaluate(time));
         if (sprite.color.a <= 0) Destroy(gameObject);
+        // do sprite
+        if (matchSprite)
+        {
+            sprite.sprite = matchSprite.sprite;
+            sprite.flipX = matchSprite.flipX;
+        } else
+        {
+            Destroy(gameObject);
+        }
     }
 }

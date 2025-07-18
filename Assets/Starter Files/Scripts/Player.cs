@@ -8,8 +8,9 @@ public class Player : MonoBehaviour
      ****************/
     [Header("Movement Modifications")]
     public float inputBufferTime; // how long inputs are held for
+    public float coyoteTime; // how long after being ungrounded that you are still considered grounded
+    public float hardFallSpeed; // how fast the player must be falling before it's considered a hard fall
     public float topHorizontalSpeed;
-    public bool enableFlipAnim;
     public float jumpSpeed;
     public float gravityScale;
     public float jumpMaxExtensionTime; // how long the jump button can be held to extend a jump
@@ -90,6 +91,8 @@ public class Player : MonoBehaviour
     public Rigidbody2D rb;
     public Collider2D mainCollider;
     public Collider2D groundCheckCollider;
+    public PlayerHealth healthScript;
+    public PlayerSounds sound;
 
     // handle other
     private float dir;
@@ -188,11 +191,16 @@ public class Player : MonoBehaviour
             dir = Mathf.Sign(horizInput);
             if (controllerAlt) anim.runtimeAnimatorController = dir == 1 ? controllerMain : controllerAlt;
             transform.localScale = new Vector3(dir * Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
-            if (grounded && enableFlipAnim) anim.Play("flip");
         }
         // do movement
         rb.velocity = new Vector2(horizInput, rb.velocity.y);
         anim.SetBool("moving", Mathf.Abs(horizInput) > 0.01f);
+    }
+
+    // call this through animation triggers
+    void doStepSound()
+    {
+        AudioManager.Instance.PlaySFX(sound.stepSound, sound.stepSoundVol);
     }
 
     void doJumping()
@@ -202,6 +210,7 @@ public class Player : MonoBehaviour
         {
             if (grounded || canDoubleJump)
             {
+                AudioManager.Instance.PlaySFX(sound.jumpSound, sound.jumpSoundVol);
                 if (!grounded)
                 {
                     canDoubleJump = false;
@@ -235,6 +244,7 @@ public class Player : MonoBehaviour
         if (enableDash && Input.GetKeyDown(dashKey) && dashTimer <= -dashDowntime)
         {
             dashTimer = dashTime;
+            AudioManager.Instance.PlaySFX(sound.dashSound, sound.dashSoundVol);
             anim.Play("dash");
             anim.SetBool("dashing", true);
             rb.velocity = new Vector2(dashSpeed * dir, 0);
@@ -269,17 +279,22 @@ public class Player : MonoBehaviour
             // reset grounded var
             grounded = true;
             // do jump if buffered
-            if(bufferedJumpTimer > 0 && !Input.GetKey(downKey))
+            if (bufferedJumpTimer > 0 && !Input.GetKey(downKey))
             {
                 jumpHoldTimer = jumpMaxExtensionTime;
             }
             // handle double jump
             if (enableDoubleJump) canDoubleJump = true;
-            // handle animations
+            // handle animations/sound
             anim.SetBool("airborne", false);
-            if(!wasGrounded) anim.Play("land");
+            if (!wasGrounded)
+            {
+                if(rb.velocity.y < -hardFallSpeed) AudioManager.Instance.PlaySFX(sound.landSound, sound.landSoundVol);
+                if(!healthScript.dead) anim.Play("land");
+            }
         } else
         {
+            // increment airborne time and set ungrounded
             grounded = false;
             anim.SetBool("airborne", true);
         }

@@ -45,6 +45,14 @@ public class Attack : MonoBehaviour
     public float timeBetweenAttacks;
     public bool autofire; // toggles whether the attack can be held down to fire
 
+    [Header("Sounds")]
+    public AudioClip spawnSound;
+    public float spawnSoundVol = 1;
+    public AudioClip hitSound;
+    public float hitSoundVol = 1;
+    public AudioClip expireSound;
+    public float expireSoundVol = 1;
+
     // components
     [Header("Other Components")]
     public float spawnDelay;
@@ -75,6 +83,7 @@ public class Attack : MonoBehaviour
     {
         groundMask = LayerMask.NameToLayer("Ground");
         verticalVelocity = initialVerticalVelocity;
+        AudioManager.Instance.PlaySFX(spawnSound, spawnSoundVol);
         // add a custom startup for different ais
         switch (ai)
         {
@@ -98,11 +107,12 @@ public class Attack : MonoBehaviour
                         // spawn child in direction of nearest enemy
                         float angle = CrackshotManager.Instance.getAngle(transform.position);
                         Instantiate(childObjects[0], transform.position, Quaternion.Euler(0,0,angle));
-                        destroyProjectile();
+                        AudioManager.Instance.PlaySFX(spawnSound, spawnSoundVol, 1.5f);
+                        destroyProjectile(null, 0);
                     }
                     break;
                 default:
-                    destroyProjectile();
+                    destroyProjectile(expireSound, expireSoundVol);
                     break;
             }
         }
@@ -161,7 +171,7 @@ public class Attack : MonoBehaviour
                 // bounce on floor
                 if(source == HitType.ground)
                 {
-                    // check if the collission was vertical
+                    // check if the collission was at the bottom
                     Collider2D checkCollider = childObjects[0].GetComponent<Collider2D>();
                     List<Collider2D> hits = new List<Collider2D>();
                     ContactFilter2D dummy = new ContactFilter2D();
@@ -172,7 +182,6 @@ public class Attack : MonoBehaviour
                     {
                         if (c == hit) isBounce = true;
                     }
-                    Debug.DrawLine(checkCollider.bounds.center + checkCollider.bounds.size / 2, checkCollider.bounds.center - checkCollider.bounds.size / 2, Color.red, 3);
                     checkCollider.enabled = false;
 
                     // do logic
@@ -181,22 +190,33 @@ public class Attack : MonoBehaviour
                         // bounce
                         verticalVelocity = Mathf.Abs(verticalVelocity) * .95f;
                         // move a bit to prevent multi-hits
-                        transform.Translate(0, verticalVelocity * Time.deltaTime, 0, Space.World); 
+                        transform.Translate(0, verticalVelocity * Time.deltaTime, 0, Space.World);
+                        // play sound
+                        AudioManager.Instance.PlaySFX(hitSound, hitSoundVol);
                     } else
                     {
                         // hit wall and die
-                        destroyProjectile();
+                        destroyProjectile(hitSound, hitSoundVol);
                     }
+                } else
+                {
+                    destroyProjectile(hitSound, hitSoundVol);
                 }
                 break;
             default:
-                if (!piercing) destroyProjectile();
+                if (!piercing)
+                {
+                    destroyProjectile(hitSound, hitSoundVol);
+                }
                 break;
         }
     }
 
-    void destroyProjectile()
+    void destroyProjectile(AudioClip sound, float soundVol)
     {
+        // play sound
+        AudioManager.Instance.PlaySFX(sound, soundVol);
+
         // allow for custom death behavior (like explosions)
         switch (ai)
         {
